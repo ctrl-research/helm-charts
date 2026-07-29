@@ -1,0 +1,22 @@
+{{- range $name, $config := .Values.persistentVolumeClaims }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "generic.labels" (dict "name" $name) | nindent 4 }}
+  {{- with $config.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - {{ $config.accessMode | default "ReadWriteOnce" | quote }}
+  resources:
+    requests:
+      storage: {{ $config.size | default "8Gi" | quote }}
+  {{- with $config.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,27 @@
+{{- define "common.cluster_role.tpl" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "common.metadata.name" . }}
+  labels:
+    {{ include "common.metadata.labels" . | indent 4 }}
+rules: {}
+{{- end }}
+
+{{- define "common.cluster_role" -}}
+{{- include "common.util.merge" (append . "common.cluster_role.tpl") -}}
+{{- end -}}
+
+{{- define "common.cluster_role_binding.tpl" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "common.metadata.name" . }}
+  labels:
+    {{ include "common.metadata.labels" . | indent 4 }}
+roleRef: {}
+{{- end }}
+
+{{- define "common.cluster_role_binding" -}}
+{{- include "common.util.merge" (append . "common.cluster_role_binding.tpl") -}}
+{{- end -}}

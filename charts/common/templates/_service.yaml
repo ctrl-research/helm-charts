@@ -1,0 +1,17 @@
+{{- define "common.service.tpl" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "common.metadata.name" . }}
+  labels:
+    {{ include "common.metadata.labels" . | indent 4 }}
+spec:
+  selector:
+    {{ include "common.metadata.selectorLabels" . | indent 4 }}
+  type: ClusterIP
+{{- end }}
+
+{{- define "common.service" -}}
+{{- include "common.util.merge" (append . "common.service.tpl") -}}
+{{- end -}}
+---

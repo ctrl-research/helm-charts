@@ -1,0 +1,33 @@
+{{- range $name, $config := .Values.horizontalPodAutoscalers }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "generic.labels" (dict "name" $name) | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: {{ $config.scaleTargetRef.apiVersion | default "apps/v1" }}
+    kind: {{ $config.scaleTargetRef.kind | default "Deployment" }}
+    name: {{ $config.scaleTargetRef.name }}
+  minReplicas: {{ $config.minReplicas }}
+  maxReplicas: {{ $config.maxReplicas }}
+  metrics:
+    {{- with $config.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+    {{- with $config.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+{{- end }}

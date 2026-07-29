@@ -1,0 +1,17 @@
+{{- range $name, $config := .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "generic.labels" (dict "name" $name) | nindent 4 }}
+spec:
+  type: {{ $config.type | default "ClusterIP" }}
+  {{- with $config.ports }}
+  ports:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- toYaml ($config.selector | default (dict "app.kubernetes.io/name" $name)) | nindent 4 }}
+{{- end }}

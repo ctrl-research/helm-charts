@@ -4,5 +4,5 @@ module.exports = {
   dependencyDashboardTitle: 'Dependency Dashboard',
   onboarding: true,
   onboardingBranch: 'renovate/configure',
-  repositories: ['j6nca/template']
+  repositories: ['ctrl-research/helm-charts']
 };

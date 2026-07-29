@@ -1,0 +1,102 @@
+# deployments:
+#   app:
+#     image:
+#       registry: docker.io
+#       repository: nginx
+#       tag: latest
+#       pullPolicy: IfNotPresent
+#       pullSecrets: []
+#     containerName: ""
+#     command: []
+#     args: []
+#     ports:
+#       - name: http
+#         containerPort: 80
+#         protocol: TCP
+#     env: []
+#     envFrom: []
+#     resources: {}
+#     livenessProbe: {}
+#     readinessProbe: {}
+#     startupProbe: {}
+#     volumeMounts: []
+#     volumes: []
+#     initContainers: []
+#     replicas: 1
+#     strategy: {}
+#     podAnnotations: {}
+#     podSecurityContext: {}
+#     securityContext: {}
+#     nodeSelector: {}
+#     tolerations: []
+#     affinity: {}
+
+# services:
+#   app:
+#     type: ClusterIP
+#     ports:
+#       - port: 80
+#         targetPort: http
+#         protocol: TCP
+#         name: http
+#     selector:
+#       app.kubernetes.io/name: app
+
+# configmaps:
+#   app-config:
+#     data:
+#       key: value
+
+# secrets:
+#   app-secret:
+#     type: Opaque
+#     stringData:
+#       password: ""
+
+# serviceAccounts:
+#   app:
+#     annotations: {}
+#     imagePullSecrets: []
+
+# persistentVolumeClaims:
+#   app-data:
+#     storageClass: ""
+#     accessMode: ReadWriteOnce
+#     size: 8Gi
+#     annotations: {}
+
+# horizontalPodAutoscalers:
+#   app:
+#     scaleTargetRef:
+#       apiVersion: apps/v1
+#       kind: Deployment
+#       name: app
+#     minReplicas: 1
+#     maxReplicas: 10
+#     targetCPUUtilizationPercentage: 80
+#     targetMemoryUtilizationPercentage: ""
+
+# ingresses:
+#   app:
+#     className: ""
+#     annotations: {}
+#     hosts:
+#       - host: chart-example.local
+#         paths:
+#           - path: /
+#             pathType: ImplementationSpecific
+#             backend:
+#               service:
+#                 name: app
+#                 port:
+#                   number: 80
+#     tls: []
+
+deployments: {}
+services: {}
+configmaps: {}
+secrets: {}
+serviceAccounts: {}
+persistentVolumeClaims: {}
+horizontalPodAutoscalers: {}
+ingresses: {}

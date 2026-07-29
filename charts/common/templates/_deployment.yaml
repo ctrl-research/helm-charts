@@ -1,0 +1,28 @@
+{{- define "common.deployment.tpl" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.metadata.name" . }}
+  labels:
+    {{ include "common.metadata.labels" . | indent 4 }}
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  selector:
+    matchLabels:
+      {{ include "common.metadata.selectorLabels" . | indent 6 }}
+  template:
+    metadata:
+      labels:
+        {{ include "common.metadata.labels" . | indent 8 }}
+    spec:
+      containers: {}
+{{- end }}
+
+{{- define "common.deployment" -}}
+{{- include "common.util.merge" (append . "common.deployment.tpl") -}}
+{{- end -}}
+---
