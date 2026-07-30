@@ -2,6 +2,13 @@ apiVersion: v1
 entries:
   generic:
   - apiVersion: v2
+    created: "2026-07-30T16:00:37.805480758Z"
+    digest: 3b6d3e22df1ecb43e893ca4016e59655d365543567cde57b090b43578cf9b020
+    name: generic
+    urls:
+    - https://github.com/ctrl-research/helm-charts/releases/download/generic-0.2.1/generic-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
     created: "2026-07-30T05:36:18.668806699Z"
     dependencies:
     - name: common
@@ -12,4 +19,4 @@ entries:
     urls:
     - https://github.com/ctrl-research/helm-charts/releases/download/generic-0.2.0/generic-0.2.0.tgz
     version: 0.2.0
-generated: "2026-07-30T05:36:18.668816978Z"
+generated: "2026-07-30T16:00:37.805491824Z"
