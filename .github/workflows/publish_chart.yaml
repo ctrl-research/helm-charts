@@ -28,12 +28,16 @@ jobs:
             version=$(grep '^version:' "${chart}Chart.yaml" | awk '{print $2}')
             tag="${chart_name}-${version}"
             if git rev-parse "$tag" >/dev/null 2>&1; then
-              echo "Tag $tag exists, bumping $chart_name"
-              IFS='.' read -r major minor patch <<< "$version"
-              patch=$((patch + 1))
-              new_version="${major}.${minor}.${patch}"
-              sed -i "s/^version: .*/version: ${new_version}/" "${chart}Chart.yaml"
-              git add "${chart}Chart.yaml"
+              if [ -n "$(git diff "$tag" HEAD -- "$chart")" ]; then
+                echo "Chart $chart_name changed since $tag, bumping"
+                IFS='.' read -r major minor patch <<< "$version"
+                patch=$((patch + 1))
+                new_version="${major}.${minor}.${patch}"
+                sed -i "s/^version: .*/version: ${new_version}/" "${chart}Chart.yaml"
+                git add "${chart}Chart.yaml"
+              else
+                echo "Chart $chart_name unchanged since $tag, skipping"
+              fi
             fi
           done
           if ! git diff --cached --quiet; then
