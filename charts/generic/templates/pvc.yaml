@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $.Chart.Name }}-{{ $name }}
+  name: {{ $.Release.Name }}-{{ $name }}
   labels:
-    {{- include "generic.labels" (dict "chartName" $.Chart.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
   {{- with $config.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

@@ -3,9 +3,9 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ $.Chart.Name }}-{{ $name }}
+  name: {{ $.Release.Name }}-{{ $name }}
   labels:
-    {{- include "generic.labels" (dict "chartName" $.Chart.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: {{ $config.scaleTargetRef.apiVersion | default "apps/v1" }}

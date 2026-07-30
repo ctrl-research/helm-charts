@@ -1,3 +1,3 @@
 {{- define "generic.labels" -}}
-app.kubernetes.io/name: {{ .chartName }}-{{ .name }}
+app.kubernetes.io/name: {{ .releaseName }}-{{ .name }}
 {{- end -}}
