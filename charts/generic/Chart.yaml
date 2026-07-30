@@ -2,7 +2,3 @@ apiVersion: v2
 name: generic
 version: 0.2.0
 
-dependencies:
-- name: common
-  version: 0.2.1
-  repository: file://../common
