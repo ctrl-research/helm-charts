@@ -21,13 +21,28 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Update chart dependencies
+      - name: Auto-bump stale chart versions
         run: |
           for chart in charts/*/; do
-            if [ -f "${chart}Chart.yaml" ]; then
-              helm dependency update "$chart"
+            chart_name=$(basename "$chart")
+            version=$(grep '^version:' "${chart}Chart.yaml" | awk '{print $2}')
+            tag="${chart_name}-${version}"
+            if git rev-parse "$tag" >/dev/null 2>&1; then
+              echo "Tag $tag exists, bumping $chart_name"
+              IFS='.' read -r major minor patch <<< "$version"
+              patch=$((patch + 1))
+              new_version="${major}.${minor}.${patch}"
+              sed -i "s/^version: .*/version: ${new_version}/" "${chart}Chart.yaml"
+              git add "${chart}Chart.yaml"
             fi
           done
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: bump stale chart versions [skip ci]"
+          fi
+
+      - name: Push version bumps
+        run: git push
+        if: success()
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
