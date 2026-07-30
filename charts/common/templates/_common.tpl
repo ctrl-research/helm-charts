@@ -2,7 +2,7 @@
 common.metadata.name will provide a re-usable standardized name.
 */}}
 {{- define "common.metadata.name" -}}
-{{ .Chart.Name }}
+{{ .Chart.Name }}-{{ .name }}
 {{- end -}}
 
 {{- /*

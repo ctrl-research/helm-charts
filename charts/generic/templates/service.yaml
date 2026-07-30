@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $name }}
+  name: {{ $.Chart.Name }}-{{ $name }}
   labels:
-    {{- include "generic.labels" (dict "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "chartName" $.Chart.Name "name" $name) | nindent 4 }}
 spec:
   type: {{ $config.type | default "ClusterIP" }}
   {{- with $config.ports }}
@@ -13,5 +13,5 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
-    {{- toYaml ($config.selector | default (dict "app.kubernetes.io/name" $name)) | nindent 4 }}
+    {{- toYaml ($config.selector | default (dict "app.kubernetes.io/name" (printf "%s-%s" $.Chart.Name $name))) | nindent 4 }}
 {{- end }}
