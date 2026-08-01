@@ -1,4 +1,5 @@
 apiVersion: v2
 name: generic
-version: 0.2.2
-
+description: Deploy arbitrary applications that don't have a dedicated Helm chart
+type: application
+version: 0.3.0

@@ -3,9 +3,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ $.Release.Name }}-{{ $name }}
+  name: {{ include "generic.fullname" (dict "root" $ "name" $name) }}
   labels:
-    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "root" $ "name" $name) | nindent 4 }}
   {{- with $config.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -30,13 +30,19 @@ spec:
       http:
         paths:
           {{- range .paths }}
+          {{- $svcName := .backend.service.name }}
           - path: {{ .path }}
-            pathType: {{ .pathType }}
+            pathType: {{ .pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ .backend.service.name }}
+                {{- /* keys in .Values.services resolve to their chart-managed name; anything else passes through verbatim */}}
+                name: {{ if hasKey ($.Values.services | default dict) $svcName }}{{ include "generic.fullname" (dict "root" $ "name" $svcName) }}{{ else }}{{ $svcName }}{{ end }}
                 port:
+                  {{- if .backend.service.port.name }}
+                  name: {{ .backend.service.port.name }}
+                  {{- else }}
                   number: {{ .backend.service.port.number }}
+                  {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}

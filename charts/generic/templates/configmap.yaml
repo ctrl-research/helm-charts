@@ -3,9 +3,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-{{ $name }}
+  name: {{ include "generic.fullname" (dict "root" $ "name" $name) }}
   labels:
-    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "root" $ "name" $name) | nindent 4 }}
+{{- with $config.data }}
 data:
-  {{- toYaml $config.data | nindent 2 }}
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- with $config.binaryData }}
+binaryData:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}

@@ -1,18 +1,23 @@
 {{- range $name, $config := .Values.horizontalPodAutoscalers }}
+{{- $target := $config.scaleTargetRef | default dict }}
+{{- $targetKind := $target.kind | default "Deployment" }}
+{{- $targetName := $target.name | default $name }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ $.Release.Name }}-{{ $name }}
+  name: {{ include "generic.fullname" (dict "root" $ "name" $name) }}
   labels:
-    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "root" $ "name" $name) | nindent 4 }}
 spec:
   scaleTargetRef:
-    apiVersion: {{ $config.scaleTargetRef.apiVersion | default "apps/v1" }}
-    kind: {{ $config.scaleTargetRef.kind | default "Deployment" }}
-    name: {{ $config.scaleTargetRef.name }}
-  minReplicas: {{ $config.minReplicas }}
-  maxReplicas: {{ $config.maxReplicas }}
+    apiVersion: {{ $target.apiVersion | default "apps/v1" }}
+    kind: {{ $targetKind }}
+    {{- /* keys in .Values.deployments resolve to their chart-managed name; anything else passes through verbatim */}}
+    name: {{ if and (eq $targetKind "Deployment") (hasKey ($.Values.deployments | default dict) $targetName) }}{{ include "generic.fullname" (dict "root" $ "name" $targetName) }}{{ else }}{{ $targetName }}{{ end }}
+  minReplicas: {{ $config.minReplicas | default 1 }}
+  maxReplicas: {{ required (printf "horizontalPodAutoscalers.%s.maxReplicas is required" $name) $config.maxReplicas }}
+  {{- if or $config.targetCPUUtilizationPercentage $config.targetMemoryUtilizationPercentage $config.metrics }}
   metrics:
     {{- with $config.targetCPUUtilizationPercentage }}
     - type: Resource
@@ -30,4 +35,12 @@ spec:
           type: Utilization
           averageUtilization: {{ . }}
     {{- end }}
+    {{- with $config.metrics }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- with $config.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
