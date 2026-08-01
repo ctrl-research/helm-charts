@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   generic:
   - apiVersion: v2
+    created: "2026-08-01T04:32:32.807632391Z"
+    description: Deploy arbitrary applications that don't have a dedicated Helm chart
+    digest: f6054143cfed21cab808b97fae97b2efaf8a2cb298d83a74087d55221abbb807
+    name: generic
+    type: application
+    urls:
+    - https://github.com/ctrl-research/helm-charts/releases/download/generic-0.3.0/generic-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
     created: "2026-07-30T19:47:51.845508355Z"
     digest: 75e6f82e1097075c87d436f3056eac524e7375d97f475b055742eb1a3579c881
     name: generic
@@ -26,4 +35,4 @@ entries:
     urls:
     - https://github.com/ctrl-research/helm-charts/releases/download/generic-0.2.0/generic-0.2.0.tgz
     version: 0.2.0
-generated: "2026-07-30T19:47:51.845523273Z"
+generated: "2026-08-01T04:32:32.80764777Z"
