@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ $.Release.Name }}-{{ $name }}
+  name: {{ include "generic.fullname" (dict "root" $ "name" $name) }}
   labels:
-    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "root" $ "name" $name) | nindent 4 }}
   {{- with $config.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,7 +16,8 @@ spec:
   resources:
     requests:
       storage: {{ $config.size | default "8Gi" | quote }}
-  {{- with $config.storageClass }}
-  storageClassName: {{ . }}
+  {{- /* an explicit empty string ("") disables dynamic provisioning, so distinguish unset from empty */}}
+  {{- if not (kindIs "invalid" $config.storageClass) }}
+  storageClassName: {{ $config.storageClass | quote }}
   {{- end }}
 {{- end }}

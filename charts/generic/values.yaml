@@ -1,12 +1,18 @@
+# All resources are created as <release-name>-<key>. Cross-references between
+# resources (HPA scaleTargetRef, ingress backends, serviceAccountName) accept
+# the short key of another resource in this file and resolve it to the full
+# chart-managed name automatically; any other value is passed through verbatim
+# (e.g. serviceAccountName: default, or a service that exists outside this release).
+
 # deployments:
 #   app:
 #     image:
-#       registry: docker.io
-#       repository: nginx
-#       tag: latest
-#       pullPolicy: IfNotPresent
+#       registry: docker.io          # default
+#       repository: nginx            # required
+#       tag: "1.27"                  # required
+#       pullPolicy: IfNotPresent     # default
 #       pullSecrets: []
-#     containerName: ""
+#     containerName: ""              # defaults to the key ("app")
 #     command: []
 #     args: []
 #     ports:
@@ -19,39 +25,49 @@
 #     livenessProbe: {}
 #     readinessProbe: {}
 #     startupProbe: {}
+#     lifecycle: {}
 #     volumeMounts: []
 #     volumes: []
 #     initContainers: []
-#     replicas: 1
+#     extraContainers: []            # additional container specs, passed through verbatim
+#     replicas: 1                    # omit when the deployment is managed by an HPA
 #     strategy: {}
+#     serviceAccountName: ""         # key from serviceAccounts below, or an existing SA name
+#     annotations: {}                # deployment metadata annotations, e.g. reloader.stakater.com/auto: "true"
 #     podAnnotations: {}
 #     podSecurityContext: {}
 #     securityContext: {}
+#     priorityClassName: ""
+#     terminationGracePeriodSeconds: 30
 #     nodeSelector: {}
 #     tolerations: []
 #     affinity: {}
+#     topologySpreadConstraints: []
 
 # services:
-#   app:
+#   app:                             # selects the pods of deployments.app by default
 #     type: ClusterIP
+#     clusterIP: ""                  # set to None for a headless service
+#     annotations: {}
 #     ports:
 #       - port: 80
 #         targetPort: http
 #         protocol: TCP
 #         name: http
-#     selector:
-#       app.kubernetes.io/name: app
+#     selector: {}                   # override only to select pods not managed by this release
 
 # configmaps:
 #   app-config:
 #     data:
 #       key: value
+#     binaryData: {}
 
 # secrets:
 #   app-secret:
 #     type: Opaque
 #     stringData:
 #       password: ""
+#     data: {}                       # pre-encoded base64 values
 
 # serviceAccounts:
 #   app:
@@ -60,21 +76,20 @@
 
 # persistentVolumeClaims:
 #   app-data:
-#     storageClass: ""
+#     storageClass: ""               # omit for the cluster default; "" disables dynamic provisioning
 #     accessMode: ReadWriteOnce
 #     size: 8Gi
 #     annotations: {}
 
 # horizontalPodAutoscalers:
 #   app:
-#     scaleTargetRef:
-#       apiVersion: apps/v1
-#       kind: Deployment
-#       name: app
+#     scaleTargetRef: {}             # defaults to the deployment matching this key ("app")
 #     minReplicas: 1
-#     maxReplicas: 10
+#     maxReplicas: 10                # required
 #     targetCPUUtilizationPercentage: 80
 #     targetMemoryUtilizationPercentage: ""
+#     metrics: []                    # additional raw autoscaling/v2 metric entries
+#     behavior: {}
 
 # ingresses:
 #   app:
@@ -84,12 +99,12 @@
 #       - host: chart-example.local
 #         paths:
 #           - path: /
-#             pathType: ImplementationSpecific
+#             pathType: Prefix       # default
 #             backend:
 #               service:
-#                 name: app
+#                 name: app          # key from services above, or an external service name
 #                 port:
-#                   number: 80
+#                   number: 80       # or name: http
 #     tls: []
 
 deployments: {}

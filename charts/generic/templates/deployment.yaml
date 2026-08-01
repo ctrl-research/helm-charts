@@ -1,43 +1,61 @@
 {{- range $name, $config := .Values.deployments }}
+{{- $image := $config.image | default dict }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $.Release.Name }}-{{ $name }}
+  name: {{ include "generic.fullname" (dict "root" $ "name" $name) }}
   labels:
-    {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 4 }}
+    {{- include "generic.labels" (dict "root" $ "name" $name) | nindent 4 }}
+  {{- with $config.annotations }}
   annotations:
-    reloader.stakater.com/auto: "true"
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  replicas: {{ $config.replicas | default 1 }}
+  {{- if not (kindIs "invalid" $config.replicas) }}
+  replicas: {{ $config.replicas }}
+  {{- end }}
   {{- with $config.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 6 }}
+      {{- include "generic.selectorLabels" (dict "root" $ "name" $name) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "generic.labels" (dict "releaseName" $.Release.Name "name" $name) | nindent 8 }}
+        {{- include "generic.labels" (dict "root" $ "name" $name) | nindent 8 }}
       {{- with $config.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
     spec:
-      {{- with $config.image.pullSecrets }}
+      {{- with $image.pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $config.serviceAccountName }}
+      serviceAccountName: {{ if hasKey ($.Values.serviceAccounts | default dict) . }}{{ include "generic.fullname" (dict "root" $ "name" .) }}{{ else }}{{ . }}{{ end }}
       {{- end }}
       {{- with $config.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with $config.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with $config.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with $config.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ $config.containerName | default $name }}
-          image: "{{ $config.image.registry | default "docker.io" }}/{{ $config.image.repository }}:{{ $config.image.tag }}"
-          imagePullPolicy: {{ $config.image.pullPolicy | default "IfNotPresent" }}
+          image: "{{ $image.registry | default "docker.io" }}/{{ required (printf "deployments.%s.image.repository is required" $name) $image.repository }}:{{ required (printf "deployments.%s.image.tag is required" $name) $image.tag }}"
+          imagePullPolicy: {{ $image.pullPolicy | default "IfNotPresent" }}
           {{- with $config.command }}
           command:
             {{- toYaml . | nindent 12 }}
@@ -48,15 +66,15 @@ spec:
           {{- end }}
           {{- with $config.ports }}
           ports:
-            {{- toYaml . | nindent 10 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with $config.env }}
           env:
-            {{- toYaml . | nindent 10 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with $config.envFrom }}
           envFrom:
-            {{- toYaml . | nindent 10 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with $config.resources }}
           resources:
@@ -74,18 +92,21 @@ spec:
           startupProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with $config.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with $config.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with $config.volumeMounts }}
           volumeMounts:
-            {{- toYaml . | nindent 10 }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with $config.initContainers }}
-      initContainers:
+        {{- with $config.extraContainers }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       {{- with $config.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
@@ -100,6 +121,10 @@ spec:
       {{- end }}
       {{- with $config.affinity }}
       affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $config.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 {{- end }}
