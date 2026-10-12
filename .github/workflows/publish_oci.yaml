@@ -1,0 +1,62 @@
+name: Publish OCI Charts
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.4
+
+      - name: Resolve chart name and version from release tag
+        id: resolve
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          echo "release tag: ${tag}"
+          for chart in charts/*/; do
+            name="$(basename "$chart")"
+            if [[ "${tag}" == "${name}-"* ]]; then
+              echo "name=${name}" >> "$GITHUB_OUTPUT"
+              echo "version=${tag#"${name}"-}" >> "$GITHUB_OUTPUT"
+              break
+            fi
+          done
+
+      - name: Validate resolved chart
+        run: |
+          name="${{ steps.resolve.outputs.name }}"
+          version="${{ steps.resolve.outputs.version }}"
+          if [[ -z "${name}" || -z "${version}" ]]; then
+            echo "::error::No chart in charts/ matches release tag ${{ github.event.release.tag_name }}"
+            exit 1
+          fi
+          echo "Publishing ${name} ${version}"
+
+      - name: Package chart
+        run: |
+          name="${{ steps.resolve.outputs.name }}"
+          helm package "charts/${name}" --destination .oci
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Push chart to OCI
+        run: |
+          name="${{ steps.resolve.outputs.name }}"
+          version="${{ steps.resolve.outputs.version }}"
+          helm push ".oci/${name}-${version}.tgz" "oci://ghcr.io/ctrl-research/charts"
