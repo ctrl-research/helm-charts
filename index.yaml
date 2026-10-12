@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   generic:
   - apiVersion: v2
+    created: "2026-10-12T20:01:51.710535564Z"
+    description: Define any Kubernetes resource (Deployment, Service, CronJob, RBAC,
+      ...) as a full manifest in values
+    digest: b45604f375d6b968b19c53c4110c8fd18839da39fc95a8d4a6e94bce47b7c894
+    name: generic
+    type: application
+    urls:
+    - https://github.com/ctrl-research/helm-charts/releases/download/generic-0.4.0/generic-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v2
     created: "2026-08-01T04:32:32.807632391Z"
     description: Deploy arbitrary applications that don't have a dedicated Helm chart
     digest: f6054143cfed21cab808b97fae97b2efaf8a2cb298d83a74087d55221abbb807
@@ -35,4 +45,4 @@ entries:
     urls:
     - https://github.com/ctrl-research/helm-charts/releases/download/generic-0.2.0/generic-0.2.0.tgz
     version: 0.2.0
-generated: "2026-08-01T04:32:32.80764777Z"
+generated: "2026-10-12T20:01:51.710554843Z"
