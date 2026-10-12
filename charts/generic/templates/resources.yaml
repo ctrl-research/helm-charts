@@ -1,0 +1,52 @@
+{{- /*
+Renders every supported resource kind from the corresponding top-level values
+key. Each entry below maps a values key to the apiVersion/kind the chart
+supplies; the manifest body is passed through generic.manifest, which only
+rewrites metadata.name to "<release>-<key>".
+
+Document order only affects this rendered file; Helm re-sorts the final
+documents by kind/name for install ordering.
+*/ -}}
+{{- if and (hasKey .Values "namespaces") (.Values.namespaces) }}
+{{- fail "The 'namespaces' key is not supported: Helm manages the release namespace via --namespace/--create-namespace, so charts should not create Namespace objects." }}
+{{- end }}
+{{- $kinds := list
+  (dict "key" "serviceAccounts" "apiVersion" "v1" "kind" "ServiceAccount")
+  (dict "key" "roles" "apiVersion" "rbac.authorization.k8s.io/v1" "kind" "Role")
+  (dict "key" "roleBindings" "apiVersion" "rbac.authorization.k8s.io/v1" "kind" "RoleBinding")
+  (dict "key" "clusterRoles" "apiVersion" "rbac.authorization.k8s.io/v1" "kind" "ClusterRole")
+  (dict "key" "clusterRoleBindings" "apiVersion" "rbac.authorization.k8s.io/v1" "kind" "ClusterRoleBinding")
+  (dict "key" "configmaps" "apiVersion" "v1" "kind" "ConfigMap")
+  (dict "key" "secrets" "apiVersion" "v1" "kind" "Secret")
+  (dict "key" "persistentVolumeClaims" "apiVersion" "v1" "kind" "PersistentVolumeClaim")
+  (dict "key" "persistentVolumes" "apiVersion" "v1" "kind" "PersistentVolume")
+  (dict "key" "storageClasses" "apiVersion" "storage.k8s.io/v1" "kind" "StorageClass")
+  (dict "key" "deployments" "apiVersion" "apps/v1" "kind" "Deployment")
+  (dict "key" "statefulSets" "apiVersion" "apps/v1" "kind" "StatefulSet")
+  (dict "key" "daemonSets" "apiVersion" "apps/v1" "kind" "DaemonSet")
+  (dict "key" "replicaSets" "apiVersion" "apps/v1" "kind" "ReplicaSet")
+  (dict "key" "replicationControllers" "apiVersion" "v1" "kind" "ReplicationController")
+  (dict "key" "pods" "apiVersion" "v1" "kind" "Pod")
+  (dict "key" "jobs" "apiVersion" "batch/v1" "kind" "Job")
+  (dict "key" "cronJobs" "apiVersion" "batch/v1" "kind" "CronJob")
+  (dict "key" "services" "apiVersion" "v1" "kind" "Service")
+  (dict "key" "endpoints" "apiVersion" "v1" "kind" "Endpoints")
+  (dict "key" "endpointSlices" "apiVersion" "discovery.k8s.io/v1" "kind" "EndpointSlice")
+  (dict "key" "ingresses" "apiVersion" "networking.k8s.io/v1" "kind" "Ingress")
+  (dict "key" "ingressClasses" "apiVersion" "networking.k8s.io/v1" "kind" "IngressClass")
+  (dict "key" "networkPolicies" "apiVersion" "networking.k8s.io/v1" "kind" "NetworkPolicy")
+  (dict "key" "horizontalPodAutoscalers" "apiVersion" "autoscaling/v2" "kind" "HorizontalPodAutoscaler")
+  (dict "key" "podDisruptionBudgets" "apiVersion" "policy/v1" "kind" "PodDisruptionBudget")
+  (dict "key" "resourceQuotas" "apiVersion" "v1" "kind" "ResourceQuota")
+  (dict "key" "limitRanges" "apiVersion" "v1" "kind" "LimitRange")
+  (dict "key" "priorityClasses" "apiVersion" "scheduling.k8s.io/v1" "kind" "PriorityClass")
+  (dict "key" "leases" "apiVersion" "coordination.k8s.io/v1" "kind" "Lease")
+  (dict "key" "runtimeClasses" "apiVersion" "node.k8s.io/v1" "kind" "RuntimeClass")
+-}}
+{{- range $kinds }}
+{{- $spec := . }}
+{{- range $name, $config := index $.Values $spec.key }}
+---
+{{ include "generic.manifest" (dict "root" $ "name" $name "apiVersion" $spec.apiVersion "kind" $spec.kind "config" $config) }}
+{{- end }}
+{{- end }}

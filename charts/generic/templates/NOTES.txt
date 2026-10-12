@@ -1,15 +1,4 @@
-{{- $count := len .Values.deployments | default 0 }}{{ if gt $count 0 }}
-{{ $count }} deployment(s) created.
-{{- end }}
-{{- $count := len .Values.services | default 0 }}{{ if gt $count 0 }}
-{{ $count }} service(s) created.
-{{- end }}
-{{- $count := len .Values.configmaps | default 0 }}{{ if gt $count 0 }}
-{{ $count }} configmap(s) created.
-{{- end }}
-{{- $count := len .Values.secrets | default 0 }}{{ if gt $count 0 }}
-{{ $count }} secret(s) created.
-{{- end }}
+The generic chart rendered the Kubernetes resources defined in your values.
 
-Get the list of services by running:
-  kubectl get svc -n {{ .Release.Namespace }}
+Review what was created:
+  helm get manifest {{ .Release.Name }}

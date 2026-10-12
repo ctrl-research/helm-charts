@@ -1,0 +1,56 @@
+# CI example: a Deployment + Service running podinfo.
+#
+# This file is only used to render and schema-validate manifests in CI
+# (helm template | kubeconform). The podinfo image is never pulled.
+
+metadata:
+  labels:
+    app.kubernetes.io/part-of: examples
+
+deployments:
+  podinfo:
+    metadata:
+      labels:
+        app.kubernetes.io/name: podinfo
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: podinfo
+      template:
+        metadata:
+          labels:
+            app: podinfo
+        spec:
+          containers:
+            - name: podinfo
+              image: ghcr.io/stefanprodan/podinfo:6.7.1
+              ports:
+                - name: http
+                  containerPort: 9898
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /readyz
+                  port: http
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: http
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+                limits:
+                  memory: 64Mi
+
+services:
+  podinfo:
+    spec:
+      type: ClusterIP
+      selector:
+        app: podinfo
+      ports:
+        - name: http
+          port: 80
+          targetPort: http

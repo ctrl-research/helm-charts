@@ -1,117 +1,124 @@
-# All resources are created as <release-name>-<key>. Cross-references between
-# resources (HPA scaleTargetRef, ingress backends, serviceAccountName) accept
-# the short key of another resource in this file and resolve it to the full
-# chart-managed name automatically; any other value is passed through verbatim
-# (e.g. serviceAccountName: default, or a service that exists outside this release).
+# The generic chart renders the Kubernetes manifests you define in this file.
+# Each top-level key maps a resource name to that resource's full manifest:
+#
+#   deployments:
+#     web:                    # becomes "<release>-web"
+#       metadata:
+#         labels:
+#           app: web
+#       spec:
+#         replicas: 1
+#         selector:
+#           matchLabels:
+#             app: web
+#         template:
+#           metadata:
+#             labels:
+#               app: web
+#           spec:
+#             containers:
+#               - name: web
+#                 image: nginx:1.27
+#                 ports:
+#                   - containerPort: 80
+#
+#   services:
+#     web:
+#       spec:
+#         selector:
+#           app: web
+#         ports:
+#           - port: 80
+#             targetPort: 80
+#         type: ClusterIP
+#
+# The chart supplies apiVersion and kind based on the key, and rewrites
+# metadata.name to "<release>-<key>". Every other field is rendered verbatim;
+# apiVersion, kind, and metadata.name you write are ignored. Because names are
+# prefixed with the release name, cross-references must use the full name
+# (e.g. serviceAccountName: "<release>-app" inside a Deployment).
+#
+# Supported keys (apiVersion/kind supplied by the chart):
+#   services                  v1                          Service
+#   endpoints                 v1                          Endpoints
+#   configmaps                v1                          ConfigMap
+#   secrets                   v1                          Secret
+#   serviceAccounts           v1                          ServiceAccount
+#   pods                      v1                          Pod
+#   persistentVolumeClaims    v1                          PersistentVolumeClaim
+#   persistentVolumes         v1                          PersistentVolume
+#   replicationControllers    v1                          ReplicationController
+#   resourceQuotas            v1                          ResourceQuota
+#   limitRanges               v1                          LimitRange
+#   deployments               apps/v1                     Deployment
+#   replicaSets               apps/v1                     ReplicaSet
+#   statefulSets              apps/v1                     StatefulSet
+#   daemonSets                apps/v1                     DaemonSet
+#   jobs                      batch/v1                    Job
+#   cronJobs                  batch/v1                    CronJob
+#   horizontalPodAutoscalers  autoscaling/v2              HorizontalPodAutoscaler
+#   ingresses                 networking.k8s.io/v1        Ingress
+#   ingressClasses            networking.k8s.io/v1        IngressClass
+#   networkPolicies           networking.k8s.io/v1        NetworkPolicy
+#   podDisruptionBudgets      policy/v1                   PodDisruptionBudget
+#   roles                     rbac.authorization.k8s.io/v1 Role
+#   roleBindings              rbac.authorization.k8s.io/v1 RoleBinding
+#   clusterRoles              rbac.authorization.k8s.io/v1 ClusterRole
+#   clusterRoleBindings       rbac.authorization.k8s.io/v1 ClusterRoleBinding
+#   storageClasses            storage.k8s.io/v1           StorageClass
+#   endpointSlices            discovery.k8s.io/v1         EndpointSlice
+#   priorityClasses           scheduling.k8s.io/v1        PriorityClass
+#   leases                    coordination.k8s.io/v1      Lease
+#   runtimeClasses            node.k8s.io/v1              RuntimeClass
+#
+# Note: Namespaces are intentionally not a supported key. Helm manages the
+# release namespace via --namespace/--create-namespace, so charts should not
+# create Namespace objects.
 
-# deployments:
-#   app:
-#     image:
-#       registry: docker.io          # default
-#       repository: nginx            # required
-#       tag: "1.27"                  # required
-#       pullPolicy: IfNotPresent     # default
-#       pullSecrets: []
-#     containerName: ""              # defaults to the key ("app")
-#     command: []
-#     args: []
-#     ports:
-#       - name: http
-#         containerPort: 80
-#         protocol: TCP
-#     env: []
-#     envFrom: []
-#     resources: {}
-#     livenessProbe: {}
-#     readinessProbe: {}
-#     startupProbe: {}
-#     lifecycle: {}
-#     volumeMounts: []
-#     volumes: []
-#     initContainers: []
-#     extraContainers: []            # additional container specs, passed through verbatim
-#     replicas: 1                    # omit when the deployment is managed by an HPA
-#     strategy: {}
-#     serviceAccountName: ""         # key from serviceAccounts below, or an existing SA name
-#     annotations: {}                # deployment metadata annotations, e.g. reloader.stakater.com/auto: "true"
-#     podAnnotations: {}
-#     podSecurityContext: {}
-#     securityContext: {}
-#     priorityClassName: ""
-#     terminationGracePeriodSeconds: 30
-#     nodeSelector: {}
-#     tolerations: []
-#     affinity: {}
-#     topologySpreadConstraints: []
+# Global metadata deep-merged into every resource's metadata block. The
+# resource's own metadata takes precedence over this on key conflicts, and the
+# chart-managed metadata.name always wins.
+#
+#   metadata:
+#     labels:
+#       app.kubernetes.io/part-of: myapp
+#       team: platform
+#     annotations:
+#       example.com/owner: platform
+#
+# Note: metadata.name is always "<release>-<key>". Avoid setting `namespace`
+# here if you also define cluster-scoped resources (ClusterRole, StorageClass,
+# PersistentVolume, ...), which do not accept a namespace.
+metadata: {}
 
-# services:
-#   app:                             # selects the pods of deployments.app by default
-#     type: ClusterIP
-#     clusterIP: ""                  # set to None for a headless service
-#     annotations: {}
-#     ports:
-#       - port: 80
-#         targetPort: http
-#         protocol: TCP
-#         name: http
-#     selector: {}                   # override only to select pods not managed by this release
-
-# configmaps:
-#   app-config:
-#     data:
-#       key: value
-#     binaryData: {}
-
-# secrets:
-#   app-secret:
-#     type: Opaque
-#     stringData:
-#       password: ""
-#     data: {}                       # pre-encoded base64 values
-
-# serviceAccounts:
-#   app:
-#     annotations: {}
-#     imagePullSecrets: []
-
-# persistentVolumeClaims:
-#   app-data:
-#     storageClass: ""               # omit for the cluster default; "" disables dynamic provisioning
-#     accessMode: ReadWriteOnce
-#     size: 8Gi
-#     annotations: {}
-
-# horizontalPodAutoscalers:
-#   app:
-#     scaleTargetRef: {}             # defaults to the deployment matching this key ("app")
-#     minReplicas: 1
-#     maxReplicas: 10                # required
-#     targetCPUUtilizationPercentage: 80
-#     targetMemoryUtilizationPercentage: ""
-#     metrics: []                    # additional raw autoscaling/v2 metric entries
-#     behavior: {}
-
-# ingresses:
-#   app:
-#     className: ""
-#     annotations: {}
-#     hosts:
-#       - host: chart-example.local
-#         paths:
-#           - path: /
-#             pathType: Prefix       # default
-#             backend:
-#               service:
-#                 name: app          # key from services above, or an external service name
-#                 port:
-#                   number: 80       # or name: http
-#     tls: []
-
-deployments: {}
 services: {}
+endpoints: {}
 configmaps: {}
 secrets: {}
 serviceAccounts: {}
+pods: {}
 persistentVolumeClaims: {}
+persistentVolumes: {}
+replicationControllers: {}
+resourceQuotas: {}
+limitRanges: {}
+deployments: {}
+replicaSets: {}
+statefulSets: {}
+daemonSets: {}
+jobs: {}
+cronJobs: {}
 horizontalPodAutoscalers: {}
 ingresses: {}
+ingressClasses: {}
+networkPolicies: {}
+podDisruptionBudgets: {}
+roles: {}
+roleBindings: {}
+clusterRoles: {}
+clusterRoleBindings: {}
+storageClasses: {}
+endpointSlices: {}
+priorityClasses: {}
+leases: {}
+runtimeClasses: {}

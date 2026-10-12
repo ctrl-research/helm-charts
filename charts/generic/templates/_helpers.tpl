@@ -7,19 +7,20 @@ Call with (dict "root" $ "name" $name).
 {{- end -}}
 
 {{/*
-Selector labels. Used in Deployment matchLabels and Service selectors.
-Deployment selectors are immutable — never add labels here.
-*/}}
-{{- define "generic.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "generic.fullname" . }}
-{{- end -}}
+Render a user-supplied Kubernetes manifest verbatim.
 
-{{/*
-Metadata labels. Safe to extend.
+The chart supplies apiVersion and kind and sets metadata.name to the
+chart-prefixed name; every other field is passed through untouched. Any
+apiVersion, kind, or metadata.name in the supplied manifest is ignored.
+Top-level .Values.metadata is deep-merged first and can be overridden
+per-resource by the manifest's own metadata block.
+
+Call with (dict "root" $ "name" $name "apiVersion" $v "kind" $k "config" $config).
 */}}
-{{- define "generic.labels" -}}
-{{ include "generic.selectorLabels" . }}
-app.kubernetes.io/instance: {{ .root.Release.Name }}
-app.kubernetes.io/managed-by: {{ .root.Release.Service }}
-helm.sh/chart: {{ printf "%s-%s" .root.Chart.Name .root.Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- define "generic.manifest" -}}
+{{- $config := .config | default dict -}}
+{{- $obj := merge (omit $config "apiVersion" "kind") (dict "apiVersion" .apiVersion "kind" .kind) -}}
+{{- $metadata := mergeOverwrite (deepCopy (.root.Values.metadata | default dict)) (deepCopy ($config.metadata | default dict)) (dict "name" (include "generic.fullname" (dict "root" .root "name" .name))) -}}
+{{- $_ := set $obj "metadata" $metadata -}}
+{{ toYaml $obj }}
 {{- end -}}
