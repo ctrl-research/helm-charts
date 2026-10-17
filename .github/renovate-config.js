@@ -4,5 +4,5 @@ module.exports = {
   dependencyDashboardTitle: 'Dependency Dashboard',
   onboarding: true,
   onboardingBranch: 'renovate/configure',
-  repositories: ['ctrl-research/helm-charts']
+  repositories: ['thanoslabs/helm-charts']
 };
